@@ -253,4 +253,5 @@ void resetTouchController(CTP_Class_t *ctp)
     HAL_GPIO_WritePin(ctp->Hardware.RST.Port, ctp->Hardware.RST.Pin, GPIO_PIN_RESET);
     HAL_Delay(10);
     HAL_GPIO_WritePin(ctp->Hardware.RST.Port, ctp->Hardware.RST.Pin, GPIO_PIN_SET);
+    memset((void*)&ctp->signal,0,sizeof(ctp->signal));
 }
