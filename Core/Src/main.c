@@ -27,7 +27,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "CTP.h"
+// #include "CTP.h"
+// #include "ILI9341.h"
+#include "LCD.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,6 +43,54 @@ CTP_Class_t CTP_obj = {
   .flag.DMA = 0,
   .Hardware.RST.Pin = GPIO_PIN_10,
   .Hardware.RST.Port = GPIOA,
+};
+
+ILI9341_Class_t ILI93_obj = {
+  .spi.buf = NULL,
+  .spi.bytes = NULL,
+  .spi.DMA = false,
+  .spi.Timeout = 10,
+  .spi.handle = &hspi1,
+  .spi.size = 0,
+  .Hardware.CS.Pin = GPIO_PIN_9,
+  .Hardware.CS.Port = GPIOB,
+  .Hardware.LED.Pin = GPIO_PIN_6,
+  .Hardware.LED.Port = GPIOB,
+  .Hardware.RS.Pin = GPIO_PIN_7,
+  .Hardware.RS.Port = GPIOB,
+  .Hardware.RST.Pin = GPIO_PIN_8,
+  .Hardware.RST.Port = GPIOB,
+};
+
+LCD_Class_t LCD = {
+  .touch = {
+  .i2c.addr = 0x70,
+  .i2c.byte = NULL,
+  .i2c.buf = NULL,
+  .i2c.handle = &hi2c2,
+  .i2c.Timeout = 10,
+  .flag.DMA = 0,
+  .Hardware.RST.Pin = GPIO_PIN_10,
+  .Hardware.RST.Port = GPIOA,
+  },
+  .display = {
+  .spi.buf = NULL,
+  .spi.bytes = NULL,
+  .spi.DMA = false,
+  .spi.Timeout = 100,
+  .spi.handle = &hspi1,
+  .spi.size = 0,
+  .Hardware.CS.Pin = GPIO_PIN_9,
+  .Hardware.CS.Port = GPIOB,
+  .Hardware.LED.Pin = GPIO_PIN_6,
+  .Hardware.LED.Port = GPIOB,
+  .Hardware.RS.Pin = GPIO_PIN_7,
+  .Hardware.RS.Port = GPIOB,
+  .Hardware.RST.Pin = GPIO_PIN_8,
+  .Hardware.RST.Port = GPIOB,
+  },
+  .width = 240,
+  .height = 320,
 };
 /* USER CODE END PTD */
 
@@ -107,6 +157,7 @@ int main(void)
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 	CTP_Init(&CTP_obj);
+	LCD_Init(&LCD);
   /* USER CODE END 2 */
 
   /* Infinite loop */

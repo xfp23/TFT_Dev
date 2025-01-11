@@ -13,6 +13,8 @@
  */
  
 #include "CTP.h"
+#include "spi.h"
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -40,16 +42,23 @@ extern "C"
 #define DD_OFF      (0x00 << 3) // 关闭调光功能，亮度直接根据亮度寄存器设置。
 #define BL_OFF      (0x00 << 2) // 完全关闭背光电路，即使显示屏的其他亮度设置仍启用，屏幕也不会发光（背光电路强制关闭）。
 #define BL_ON       (0x01 << 2) // 打开背光电路，显示屏发光
+
+typedef CTP_gpio_t ILI9341_gpio_t;
+
+
 typedef enum 
 {
- DISABLE = 0x00, // 通用禁用开关
- ENABLE = 0X01, // 通用使能开关
+  REG_DISABLE = 0x00, // 通用禁用开关
+  REG_ENABLE = 0X01, // 通用使能开关
 
 // EXTC_CT 寄存器
-EXTC_DISABLE = DISABLE, // 扩展命令集禁用
-EXTC_ENABLE = ENABLE,  // 扩展命令集使能
+EXTC_DISABLE = REG_DISABLE, // 扩展命令集禁用
+EXTC_ENABLE = REG_ENABLE,  // 扩展命令集使能
 
-//POWER_CT 寄存器
+EXTC_PARAM2  =  0xC1,
+
+EXTC_PARAM3 = 0x30,
+//PWR_SEQ_CT 寄存器
  SOFT_START_HOLD_3 = 0x44, // 软启动保持3帧
  SOFT_START_HOLD_2 = 0x54, // 软启动保持3帧
  SOFT_START_HOLD_1 = 0x64, // 软启动保持3帧 （默认）
@@ -60,6 +69,8 @@ POWER_SEQ_2 = 0X01, // 第二阶段使用
 POWER_SEQ_3 = 0X02, // 第三阶段使用
 POWER_SEQ_4 = 0X03, // 第四阶段使用 （默认）
 
+POWER_PARAM3 = 0x12,
+
 DDVDH_ENABLE = 0x81, // 启用DDVDH （default)
 DDVDH_DISABLE = 0X01, // 禁用
 
@@ -69,10 +80,10 @@ DEFAULT_TIM_1unit = 0x85,
 //parameter:CR timing control
 
 // 写下面这个参数
-EQ0_CR0 = EQ_DISABLE | CR_DISABLE,
-EQ1_CR0 = EQ_ENABLE | CR_DISABLE,
-EQ0_CR1 = EQ_DISABLE | CR_ENABLE,
-EQ1_CR1 = EQ_ENABLE | CR_ENABLE,
+EQ0_CR0 = EQ_DISABLE | CR_DISABLE,   // 
+EQ1_CR0 = EQ_ENABLE | CR_DISABLE,    //
+EQ0_CR1 = EQ_DISABLE | CR_ENABLE,    //
+EQ1_CR1 = EQ_ENABLE | CR_ENABLE,     //
 
 DEFAULT_CHARGE = 0x7A,// (: default pre-charge timing) 参数：预充电时序控制
 DEFAULT_CHARGE_1UINT = 0X79,
@@ -110,7 +121,7 @@ TIMB_PARAM1 = 0X00,
 
 TIMB_PARAM2 = 0x00,
 
-// power_CT1 寄存器
+// POWER_CT1 寄存器
 VRH_3V3 = 0X09,
 VRH_5V = 0x2B,
 VRH_3_8V = 0x13, // (default)
@@ -120,6 +131,7 @@ POWER_CT2_PARAM = 0x13,
 
 //VCOM_CT1 寄存器
 VCOM_CT1_PARAM1 = 0x22,
+
 VCOM_CT1_PARAM2 = 0x35,
 
 // VCOM_CT2 寄存器
@@ -127,6 +139,7 @@ VCOM_CT2_PARAM =   0xBD,
 
 // DISPLAY_INVER 寄存器
 DISPLAY_INVER_OFF = 0x20, // 关闭镜像翻转命令，开启直接发送寄存器
+DISPLAY_INVER_ON = 0x21,
 
 //MEMORY_ACCESS_CT 寄存器
 MEMORY_ACCESS_PARAM = 0x08,
@@ -143,7 +156,8 @@ PIXEL_FORMAT =  0x55,
 
 // INTERFACE_CT 寄存器
 INTERFACE_CT_PARAM1 = 0x01,
-INTERFACE_CT_PARAM1 = 0x30,
+
+INTERFACE_CT_PARAM2 = 0x30,
 
 // FRAM_RATE_CT 寄存器
 FOSC_0 = 0x00,  //:正常模式下内部时钟分频比 (default)
@@ -158,8 +172,8 @@ FRAM_70HZ = 0x1B,
 FRAM_60HZ = 0X1F,
 
 //CORRECTION 寄存器
-ENABLE_3G = ENABLE,
-DISENABLE = DISABLE,
+ENABLE_3G = REG_ENABLE,
+DISENABLE_3G = REG_DISABLE,
 
 // GAMMA_SET 寄存器
 GAMMA_CURVE_1 = 0x01, //Gamma curve 1 (G2.2) 只有这一个值可用
@@ -233,11 +247,11 @@ ROTATE_180 =  0xC8, // 180度旋转
 ROTATE_270 =  0xA8, // 270度旋转
 
 // WRITE_DISPLAY_CT 寄存器
-DISPLAY_OFF = BCTRL_OFF | DD_OFF | BL_OFF,    // 亮度控制关闭，调光功能关闭，背光关闭
-DISPLAY_DIM = BCTRL_ON | DD_ON | BL_ON,      // 显示模块打开，调光功能启用，背光开启
-DISPLAY_BRIGHT = BCTRL_ON | DD_OFF | BL_ON,  // 显示模块打开，调光功能关闭，背光开启
-DISPLAY_DARK = BCTRL_ON | DD_ON | BL_OFF,    // 显示模块打开，调光功能启用，背光关闭
-DISPLAY_MINIMAL = BCTRL_OFF | DD_OFF | BL_ON // 显示模块关闭，调光功能关闭 ，背光开启
+BCTOFF_DDOFF_BLOFF = BCTRL_OFF | DD_OFF | BL_OFF,     // 亮度控制关闭，调光功能关闭，背光关闭
+BCTON_DDON_BLON = BCTRL_ON | DD_ON | BL_ON,           // 亮度控制打开，调光功能启用，背光开启
+BCTON_DDOFF_BLON = BCTRL_ON | DD_OFF | BL_ON,         // 亮度控制打开，调光功能关闭，背光开启
+BCTON_DDON_BLOFF = BCTRL_ON | DD_ON | BL_OFF,         // 亮度控制打开，调光功能启用，背光关闭
+BCTOFF_DDOFF_BLON = BCTRL_OFF | DD_OFF | BL_ON        // 亮度控制关闭，调光功能关闭 ，背光开启
 }ILI93_Command_t;
 
 typedef enum
@@ -249,7 +263,7 @@ DRIVE_TIM_CT = 0xE8,// 设备时序控制
 POWER_A_CT = 0xCB,         //Power control A
 PUMP_RATION_CT = 0xF7, // 泵比控制
 DRIVER_TIMB_CT = 0xEA,//4 Driver timing control B
-power_CT1 = 0xC0, //: ：设置GVDD电平，该电平是VCOM电平和灰阶电压电平的参考电平。
+POWER_CT1 = 0xC0, //: ：设置GVDD电平，该电平是VCOM电平和灰阶电压电平的参考电平。
 POWER_CT2 = 0xC1, // ：设置升压电路中使用的系数
 VCOM_CT1 = 0xC5, // VCOM1 控制
 VCOM_CT2 = 0xC7, // VCOM2 控制
@@ -275,8 +289,65 @@ SET_DIRECTION = 0x36,// 设置屏幕方向
 WRITE_DISPLAY_BRIGHT = 0x51, //Write Display Brightness 写入屏幕亮度，范围0x00~0xff
 READ_DISPLAY_BRIGHT = 0x52, // 读取屏幕亮度
 WRITE_DISPLAY_CT = 0x53,// 写入屏幕亮度控制寄存器
+SET_X_ADDRESS = 0x2A,// 设置x标寄存器 向这个寄存器写数据的时候需要右移八位，然后再写一次数据，把设置的高八位清除，然后再发一次结束位置，右移八位，清除高八位分开发送
+SET_Y_ADDRESS = 0x2B, // 设置y坐标 向这个寄存器写数据的时候需要右移八位，然后再写一次数据，把设置的高八位清除，然后再发一次结束位置，右移八位，清除高八位分开发送
+WR_MEMORY = 0x2C,// 该命令用于将数据从 MCU 传输到帧存储器。此命令不会更改其他驱动程序 地位。当接受该命令时，列寄存器和页寄存器被重置为起始列/起始
+                //页面位置。起始列/起始页位置根据 MA​​DCTL 设置而不同。）则 D [17:0] 为
+               //存储在帧存储器中，并且列寄存器和页寄存器递增。发送任何其他命令都可以停止框架写入。 X = 不在乎。
+RE_MEMORY = 0x2E, // 该命令将图像数据从 ILI9341 的帧存储器传输到从像素位置开始的主机处理器由前面的 set_column_address 和 set_page_address 命令指定。
+                    //如果内存访问控制 B5 = 0：列和页寄存器分别重置为起始列（SC）和起始页（SP）。像素读取自帧存储器位于（SC，SP）。然后列寄存器递增并从帧存储器读取像素，直到
+                    // 列寄存器等于结束列（EC）值。然后列寄存器重置为 SC，页寄存器重置为增加。从帧存储器读取像素，直到页寄存器等于结束页（EP）值或主机
+                    // 处理器发送另一个命令。如果内存访问控制 B5 = 1：列和页寄存器分别重置为起始列（SC）和起始页（SP）。像素读取自帧存储器位于（SC，SP）。然后页面寄存器递增并从帧存储器读取像素，直到页面
+                    //寄存器等于结束页（EP）值。然后页寄存器重置为 SP，列寄存器递增。从帧存储器读取像素，直到列寄存器等于结束列（EC）值或主机处理器发送另一个命令。
+
 }ILI93_Register_t; // 芯片寄存器
 
+typedef struct
+{
+    struct 
+    {
+     SPI_HandleTypeDef *handle;  //句柄
+       uint8_t *bytes;                  // 发送的字节指针
+       uint8_t *buf;                    // 接收数据的缓冲区
+       volatile size_t size;            // 操作字符的大小，单位: 字节
+       uint16_t Timeout;                // SPI超时时间
+       bool DMA;                        // DMA开关
+       volatile ILI93_Register_t Register; // 当前操作的寄存器
+    } spi;
+    struct
+    {
+        ILI9341_gpio_t RS;
+        ILI9341_gpio_t RST;
+        ILI9341_gpio_t CS;
+        ILI9341_gpio_t LED;
+    }Hardware;
+}ILI9341_Class_t;
+
+
+extern void ILI93_Init(ILI9341_Class_t *ILI);
+
+/**
+ * @brief 写命令函数，主要写寄存器
+ * 
+ * @param ILI 
+ * @param data ILI93_Register_t 里的寄存器
+ */
+ extern void ILI93_WR_REG(ILI9341_Class_t *ILI,ILI93_Register_t data);
+
+/**
+ * @brief 写数据函数，可写设置寄存器的参数和发送数据
+ * 
+ * @param ILI 
+ * @param data 
+ */
+ extern void ILI93_WR_DATA(ILI9341_Class_t *ILI,ILI93_Command_t data);
+
+/**
+ * @brief 设置写内存
+ * 
+ * @param ILI 
+ */
+ extern void ILI93_WriteRAM_Prepare(ILI9341_Class_t *ILI);
 
 #ifdef __cplusplus
 }
