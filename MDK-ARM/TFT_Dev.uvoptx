@@ -161,17 +161,17 @@
         <Ww>
           <count>2</count>
           <WinNumber>1</WinNumber>
-          <ItemText>CTP_obj</ItemText>
+          <ItemText>LCD,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>1</WinNumber>
-          <ItemText>CTP_obj</ItemText>
+          <ItemText>uint8_t,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
           <WinNumber>1</WinNumber>
-          <ItemText>LCD,0x0A</ItemText>
+          <ItemText>height_buf</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>

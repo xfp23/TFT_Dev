@@ -34,33 +34,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-CTP_Class_t CTP_obj = {
-  .i2c.addr = 0x70,
-  .i2c.byte = NULL,
-  .i2c.buf = NULL,
-  .i2c.handle = &hi2c2,
-  .i2c.Timeout = 10,
-  .flag.DMA = 0,
-  .Hardware.RST.Pin = GPIO_PIN_10,
-  .Hardware.RST.Port = GPIOA,
-};
-
-ILI9341_Class_t ILI93_obj = {
-  .spi.buf = NULL,
-  .spi.bytes = NULL,
-  .spi.DMA = false,
-  .spi.Timeout = 10,
-  .spi.handle = &hspi1,
-  .spi.size = 0,
-  .Hardware.CS.Pin = GPIO_PIN_9,
-  .Hardware.CS.Port = GPIOB,
-  .Hardware.LED.Pin = GPIO_PIN_6,
-  .Hardware.LED.Port = GPIOB,
-  .Hardware.RS.Pin = GPIO_PIN_7,
-  .Hardware.RS.Port = GPIOB,
-  .Hardware.RST.Pin = GPIO_PIN_8,
-  .Hardware.RST.Port = GPIOB,
-};
 
 LCD_Class_t LCD = {
   .touch = {
@@ -76,8 +49,8 @@ LCD_Class_t LCD = {
   .display = {
   .spi.buf = NULL,
   .spi.bytes = NULL,
-  .spi.DMA = false,
-  .spi.Timeout = 100,
+  .spi.DMA = true,
+  .spi.Timeout = 10,
   .spi.handle = &hspi1,
   .spi.size = 0,
   .Hardware.CS.Pin = GPIO_PIN_9,
@@ -156,15 +129,27 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-	CTP_Init(&CTP_obj);
-	LCD_Init(&LCD);
+  
+  LCD_Init(&LCD);
+  //LCD_DrawLine(&LCD,0,0,240,320,RED,50);
+  //LCD_DrawLine(&LCD,240,0,0,320,BLUE,50);
+  LCD_DrawFille_Circle(&LCD,120,120,100,MAGENTA);
+  LCD_DrawFille_Circle(&LCD,120,120,100,BROWN);
+  LCD_DrawFille_Circle(&LCD,120,120,100,TURQUOISE);
+  LCD_DrawFille_Circle(&LCD,120,120,100,GRAY);
+  LCD_DrawFille_Circle(&LCD,120,120,100,YELLOW);
+  LCD_DrawFille_Circle(&LCD,120,120,100,BLACK);
+  LCD_DrawFille_Circle(&LCD,120,120,100,RED);
+  LCD_DrawFille_Circle(&LCD,120,120,100,VIOLET);
+//  LCD_DrawCircle(&LCD,120,200,50,BLUE,3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    CTP_mainLoop(&CTP_obj);
+    CTP_mainLoop(&LCD.touch);
+	//LCD_DrawLine(&LCD,0,0,240,320,BLUE);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

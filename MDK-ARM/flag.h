@@ -1,7 +1,7 @@
 #ifndef FLAG_H
 #define FLAG_H
 
-#include "CTP.h"
+#include "LCD.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -10,7 +10,7 @@ extern "C"
 
 
 	
-extern CTP_Class_t CTP_obj;	
+extern LCD_Class_t LCD;	
 #ifdef __cplusplus
 }
 #endif
