@@ -88,7 +88,7 @@ extern void LCD_Reset(LCD_Class_t * lcd);
 
 extern void LCD_Fillclear(LCD_Class_t *lcd, LCD_Color_t color);
 
-extern void Lcd_Drawpoint(LCD_Class_t *lcd, uint16_t x, uint16_t y,LCD_Color_t color);
+extern void LCD_Drawpoint(LCD_Class_t *lcd, uint16_t x, uint16_t y,LCD_Color_t color);
 
 extern void LCD_DrawLine(LCD_Class_t *lcd, uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y, LCD_Color_t color,...);
 
@@ -108,6 +108,9 @@ extern void LCD_DrawTriangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_
 
 extern void LCD_DrawFilledTriangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, LCD_Color_t color);
 
+extern void LCD_ShowChar(LCD_Class_t *lcd, uint16_t x, uint16_t y, LCD_Color_t fc, uint16_t bc, uint8_t num, uint8_t size, uint8_t mode);
+
+extern void LCD_ShowString(LCD_Class_t *lcd,uint16_t x, uint16_t y, LCD_Color_t fc, LCD_Color_t bc, uint8_t *str,uint8_t size,uint8_t mode);
 #ifdef __cplusplus
 }
 #endif

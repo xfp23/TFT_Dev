@@ -131,26 +131,27 @@ int main(void)
   /* USER CODE BEGIN 2 */
   
   LCD_Init(&LCD);
-  LCD_DrawLine(&LCD,0,0,240,320,RED,50);
-  LCD_DrawLine(&LCD,240,0,0,320,BLUE,50);
-  LCD_DrawFille_Circle(&LCD,120,120,100,MAGENTA);
-  LCD_DrawFille_Circle(&LCD,120,120,90,BROWN);
-  LCD_DrawFille_Circle(&LCD,120,120,80,TURQUOISE);
-  LCD_DrawFille_Circle(&LCD,120,120,70,GRAY);
-  LCD_DrawFille_Circle(&LCD,120,120,60,YELLOW);
-  LCD_DrawFille_Circle(&LCD,120,120,50,BLACK);
-  LCD_DrawFille_Circle(&LCD,120,120,40,RED);
-  LCD_DrawFille_Circle(&LCD,120,120,30,VIOLET);
-  LCD_DrawFille_Circle(&LCD,120,120,20,IVORY);
-  LCD_DrawFille_Circle(&LCD,120,120,10,CYAN);
-  LCD_DrawFille_Circle(&LCD,120,120,5,SALMON);
-  LCD_DrawFille_Circle(&LCD,120,120,3,BLACK);
-  LCD_DrawOval(&LCD, 120, 120, 50, 30, BLACK,2);
-  LCD_DrawFillOval(&LCD, 120, 120, 50, 30, BLACK);
-   LCD_DrawCircle(&LCD,120,200,50,BLUE,3);
-  LCD_DrawFillRectangle(&LCD,0,0,120,120,BLACK);
-  LCD_DrawRectangle(&LCD,50,20,120,120,BLACK,1);
-  LCD_DrawFilledTriangle(&LCD,50,50,20,100,40,100,PURPLE);
+//  LCD_DrawLine(&LCD,0,0,240,320,RED,50);
+//  LCD_DrawLine(&LCD,240,0,0,320,BLUE,50);
+//  LCD_DrawFille_Circle(&LCD,120,120,100,MAGENTA);
+//  LCD_DrawFille_Circle(&LCD,120,120,90,BROWN);
+//  LCD_DrawFille_Circle(&LCD,120,120,80,TURQUOISE);
+//  LCD_DrawFille_Circle(&LCD,120,120,70,GRAY);
+//  LCD_DrawFille_Circle(&LCD,120,120,60,YELLOW);
+//  LCD_DrawFille_Circle(&LCD,120,120,50,BLACK);
+//  LCD_DrawFille_Circle(&LCD,120,120,40,RED);
+//  LCD_DrawFille_Circle(&LCD,120,120,30,VIOLET);
+//  LCD_DrawFille_Circle(&LCD,120,120,20,IVORY);
+//  LCD_DrawFille_Circle(&LCD,120,120,10,CYAN);
+//  LCD_DrawFille_Circle(&LCD,120,120,5,SALMON);
+//  LCD_DrawFille_Circle(&LCD,120,120,3,BLACK);
+//  LCD_DrawOval(&LCD, 120, 120, 50, 30, BLACK,2);
+//  LCD_DrawFillOval(&LCD, 120, 120, 50, 30, BLACK);
+//   LCD_DrawCircle(&LCD,120,200,50,BLUE,3);
+//  LCD_DrawFillRectangle(&LCD,0,0,120,120,BLACK);
+//  LCD_DrawRectangle(&LCD,50,20,120,120,BLACK,1);
+//  LCD_DrawFilledTriangle(&LCD,50,50,20,100,40,100,PURPLE);
+  LCD_ShowString(&LCD,10,45,GREEN,YELLOW,(uint8_t *)"6X12:ABCDEFGHIJKL@MNOPQRSTUVWXYZ0123456789",18,0);
   /* USER CODE END 2 */
 
   /* Infinite loop */

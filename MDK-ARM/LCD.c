@@ -1,5 +1,5 @@
-// #include "spi.h"
 #include "LCD.h"
+#include "font.h"
 #include <stdarg.h>
 #include <math.h>
 void LCD_SetWindows(LCD_Class_t * lcd,uint16_t xStar, uint16_t yStar,uint16_t xEnd,uint16_t yEnd)
@@ -116,7 +116,11 @@ void LCD_Init(LCD_Class_t * lcd)
     LCD_Fillclear(lcd,WHITE); // 白色
 }
 
-
+/**
+ * @brief LCD复位重启
+ * 
+ * @param lcd 
+ */
 void LCD_Reset(LCD_Class_t * lcd)
 {
     HAL_GPIO_WritePin(lcd->display.Hardware.RST.Port,lcd->display.Hardware.RST.Pin,GPIO_PIN_SET);
@@ -150,7 +154,7 @@ void Lcd_WriteData_16Bit(LCD_Class_t * lcd,uint16_t Data)
 *@param 点的纵坐标
 *@param 点的颜色
 */
-void Lcd_Drawpoint(LCD_Class_t *lcd, uint16_t x, uint16_t y,LCD_Color_t color)
+void LCD_Drawpoint(LCD_Class_t *lcd, uint16_t x, uint16_t y,LCD_Color_t color)
 {
 	LCD_SetCursor(lcd, x, y);
 	Lcd_WriteData_16Bit(lcd, (uint16_t)color);	
@@ -189,7 +193,7 @@ void LCD_DrawLine(LCD_Class_t *lcd, uint16_t start_x, uint16_t start_y, uint16_t
         int error = dy2 - abs(dx);
         while (x != end_x) {
             for (int i = -line_kness / 2; i <= line_kness / 2; i++) {
-                Lcd_Drawpoint(lcd, x + i, y, color);
+                LCD_Drawpoint(lcd, x + i, y, color);
             }
             if (error > 0) {
                 y += y_incr;
@@ -202,7 +206,7 @@ void LCD_DrawLine(LCD_Class_t *lcd, uint16_t start_x, uint16_t start_y, uint16_t
         int error = dx2 - abs(dy);
         while (y != end_y) {
             for (int i = -line_kness / 2; i <= line_kness / 2; i++) {
-                Lcd_Drawpoint(lcd, x, y + i, color);
+                LCD_Drawpoint(lcd, x, y + i, color);
             }
             if (error > 0) {
                 x += x_incr;
@@ -214,7 +218,7 @@ void LCD_DrawLine(LCD_Class_t *lcd, uint16_t start_x, uint16_t start_y, uint16_t
     }
 
     for (int i = -line_kness / 2; i <= line_kness / 2; i++) {
-        Lcd_Drawpoint(lcd, x + i, y, color);
+        LCD_Drawpoint(lcd, x + i, y, color);
     }
 }
 
@@ -246,14 +250,14 @@ void LCD_DrawCircle(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t rad, LCD_
         for (int i = -line_kness + 1; i <= line_kness - 1; i++) 
         {
             // 画8个对称点，并通过偏移让线条加粗
-            Lcd_Drawpoint(lcd, x + x_pos + i, y + y_pos, color);
-            Lcd_Drawpoint(lcd, x - x_pos + i, y + y_pos, color);
-            Lcd_Drawpoint(lcd, x + x_pos + i, y - y_pos, color);
-            Lcd_Drawpoint(lcd, x - x_pos + i, y - y_pos, color);
-            Lcd_Drawpoint(lcd, x + y_pos + i, y + x_pos, color);
-            Lcd_Drawpoint(lcd, x - y_pos + i, y + x_pos, color);
-            Lcd_Drawpoint(lcd, x + y_pos + i, y - x_pos, color);
-            Lcd_Drawpoint(lcd, x - y_pos + i, y - x_pos, color);
+            LCD_Drawpoint(lcd, x + x_pos + i, y + y_pos, color);
+            LCD_Drawpoint(lcd, x - x_pos + i, y + y_pos, color);
+            LCD_Drawpoint(lcd, x + x_pos + i, y - y_pos, color);
+            LCD_Drawpoint(lcd, x - x_pos + i, y - y_pos, color);
+            LCD_Drawpoint(lcd, x + y_pos + i, y + x_pos, color);
+            LCD_Drawpoint(lcd, x - y_pos + i, y + x_pos, color);
+            LCD_Drawpoint(lcd, x + y_pos + i, y - x_pos, color);
+            LCD_Drawpoint(lcd, x - y_pos + i, y - x_pos, color);
         }
 
         y_pos++;
@@ -288,13 +292,13 @@ void LCD_DrawFille_Circle(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t rad
         // 绘制每一行的点
         for (int i = x - x_pos; i <= x + x_pos; i++)
         {
-            Lcd_Drawpoint(lcd, i, y + y_pos, color);
-            Lcd_Drawpoint(lcd, i, y - y_pos, color);
+            LCD_Drawpoint(lcd, i, y + y_pos, color);
+            LCD_Drawpoint(lcd, i, y - y_pos, color);
         }
         for (int i = x - y_pos; i <= x + y_pos; i++)
         {
-            Lcd_Drawpoint(lcd, i, y + x_pos, color);
-            Lcd_Drawpoint(lcd, i, y - x_pos, color);
+            LCD_Drawpoint(lcd, i, y + x_pos, color);
+            LCD_Drawpoint(lcd, i, y - x_pos, color);
         }
 
         y_pos++;
@@ -344,10 +348,10 @@ void LCD_DrawOval(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t a, uint16_t
         {
             for (int j = -line_kness / 2; j <= line_kness / 2; j++)
             {
-                Lcd_Drawpoint(lcd, x + x_pos + i, y + y_pos + j, color);  // 第一象限
-                Lcd_Drawpoint(lcd, x - x_pos + i, y + y_pos + j, color);  // 第二象限
-                Lcd_Drawpoint(lcd, x + x_pos + i, y - y_pos + j, color);  // 第三象限
-                Lcd_Drawpoint(lcd, x - x_pos + i, y - y_pos + j, color);  // 第四象限
+                LCD_Drawpoint(lcd, x + x_pos + i, y + y_pos + j, color);  // 第一象限
+                LCD_Drawpoint(lcd, x - x_pos + i, y + y_pos + j, color);  // 第二象限
+                LCD_Drawpoint(lcd, x + x_pos + i, y - y_pos + j, color);  // 第三象限
+                LCD_Drawpoint(lcd, x - x_pos + i, y - y_pos + j, color);  // 第四象限
             }
         }
 
@@ -376,10 +380,10 @@ void LCD_DrawOval(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t a, uint16_t
         {
             for (int j = -line_kness / 2; j <= line_kness / 2; j++)
             {
-                Lcd_Drawpoint(lcd, x + x_pos + i, y + y_pos + j, color);  // 第一象限
-                Lcd_Drawpoint(lcd, x - x_pos + i, y + y_pos + j, color);  // 第二象限
-                Lcd_Drawpoint(lcd, x + x_pos + i, y - y_pos + j, color);  // 第三象限
-                Lcd_Drawpoint(lcd, x - x_pos + i, y - y_pos + j, color);  // 第四象限
+                LCD_Drawpoint(lcd, x + x_pos + i, y + y_pos + j, color);  // 第一象限
+                LCD_Drawpoint(lcd, x - x_pos + i, y + y_pos + j, color);  // 第二象限
+                LCD_Drawpoint(lcd, x + x_pos + i, y - y_pos + j, color);  // 第三象限
+                LCD_Drawpoint(lcd, x - x_pos + i, y - y_pos + j, color);  // 第四象限
             }
         }
 
@@ -422,8 +426,8 @@ void LCD_DrawFillOval(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t a, uint
         // 绘制从左到右的线段，填充上半部分
         for (int i = x - x_pos; i <= x + x_pos; i++)
         {
-            Lcd_Drawpoint(lcd, i, y + y_pos, color);  // 第一象限的点
-            Lcd_Drawpoint(lcd, i, y - y_pos, color);  // 第四象限的点
+            LCD_Drawpoint(lcd, i, y + y_pos, color);  // 第一象限的点
+            LCD_Drawpoint(lcd, i, y - y_pos, color);  // 第四象限的点
         }
 
         e2 = err;
@@ -449,8 +453,8 @@ void LCD_DrawFillOval(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t a, uint
         // 绘制从左到右的线段，填充下半部分
         for (int i = x - x_pos; i <= x + x_pos; i++)
         {
-            Lcd_Drawpoint(lcd, i, y + y_pos, color);  // 第一象限的点
-            Lcd_Drawpoint(lcd, i, y - y_pos, color);  // 第四象限的点
+            LCD_Drawpoint(lcd, i, y + y_pos, color);  // 第一象限的点
+            LCD_Drawpoint(lcd, i, y - y_pos, color);  // 第四象限的点
         }
 
         e2 = err;
@@ -492,25 +496,25 @@ void LCD_DrawRectangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_t x2, 
     // 绘制矩形的上边和下边
     for (int i = -line_kness; i <= line_kness; i++) {
         for (int x = x1; x <= x2; x++) {
-            Lcd_Drawpoint(lcd, x, y1 + i, color);  // 上边
-            Lcd_Drawpoint(lcd, x, y2 + i, color);  // 下边
+            LCD_Drawpoint(lcd, x, y1 + i, color);  // 上边
+            LCD_Drawpoint(lcd, x, y2 + i, color);  // 下边
         }
     }
 
     // 绘制矩形的左边和右边
     for (int i = -line_kness; i <= line_kness; i++) {
         for (int y = y1; y <= y2; y++) {
-            Lcd_Drawpoint(lcd, x1 + i, y, color);  // 左边
-            Lcd_Drawpoint(lcd, x2 + i, y, color);  // 右边
+            LCD_Drawpoint(lcd, x1 + i, y, color);  // 左边
+            LCD_Drawpoint(lcd, x2 + i, y, color);  // 右边
         }
     }
 
     // 处理矩形四个角的对齐
     for (int i = -line_kness; i <= line_kness; i++) {
-        Lcd_Drawpoint(lcd, x1 + i, y1 + i, color);  // 左上角
-        Lcd_Drawpoint(lcd, x2 + i, y1 + i, color);  // 右上角
-        Lcd_Drawpoint(lcd, x1 + i, y2 + i, color);  // 左下角
-        Lcd_Drawpoint(lcd, x2 + i, y2 + i, color);  // 右下角
+        LCD_Drawpoint(lcd, x1 + i, y1 + i, color);  // 左上角
+        LCD_Drawpoint(lcd, x2 + i, y1 + i, color);  // 右上角
+        LCD_Drawpoint(lcd, x1 + i, y2 + i, color);  // 左下角
+        LCD_Drawpoint(lcd, x2 + i, y2 + i, color);  // 右下角
     }
 }
 
@@ -529,7 +533,7 @@ void LCD_DrawFillRectangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_t 
 {
     for (int y = y1; y <= y2; y++) {
         for (int x = x1; x <= x2; x++) {
-            Lcd_Drawpoint(lcd, x, y, color);  // 填充矩形的每个点
+            LCD_Drawpoint(lcd, x, y, color);  // 填充矩形的每个点
         }
     }
 }
@@ -594,8 +598,133 @@ void LCD_DrawFilledTriangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_t
         if (x_start > x_end) { SWAP(x_start, x_end); } // 保证从左到右绘制
 
         for (int x = x_start; x <= x_end; x++) {
-            Lcd_Drawpoint(lcd, x, y, color);
+            LCD_Drawpoint(lcd, x, y, color);
         }
     }
 }
+
+
+/**
+ * @brief 
+ * 
+ * @param lcd 
+ * @param x 
+ * @param y 
+ * @param fc 
+ * @param bc 
+ * @param str 
+ * @param size 
+ * @param mode 
+ */
+void LCD_ShowString(LCD_Class_t *lcd,uint16_t x, uint16_t y, LCD_Color_t fc, LCD_Color_t bc, uint8_t *str,uint8_t size,uint8_t mode)
+{
+	uint16_t x0=x;							  	  
+  	uint8_t bHz=0;     //字符或者中文 
+    while(*str!=0)//数据未结束
+    { 
+        if(!bHz)
+        {
+			if(x>(lcd->width-size/2)||y>(lcd->height-size)) 
+			return; 
+	        if(*str>0x80)bHz=1;//中文 
+	        else              //字符
+	        {          
+		        if(*str==0x0D)//换行符号
+		        {         
+		            y+=size;
+					x=x0;
+		            str++; 
+		        }  
+		        else
+				{
+					if(size>16)//字库中没有集成12X24 16X32的英文字体,用8X16代替
+					{  
+					LCD_ShowChar(lcd,x,y,fc,bc,*str,16,mode);
+					x+=8; //字符,为全字的一半 
+					}
+					else
+					{
+					LCD_ShowChar(lcd,x,y,fc,bc,*str,size,mode);
+					x+=size/2; //字符,为全字的一半 
+					}
+				} 
+				str++; 
+		        
+	        }
+        }
+        // }else//中文 
+        // {   
+		// 	if(x>(lcd->width-size)||y>(lcd->height-size)) 
+		// 	return;  
+        //     bHz=0;//有汉字库    
+		// 	if(size==32)
+		// 	GUI_DrawFont32(x,y,fc,bc,str,mode);	 	
+		// 	else if(size==24)
+		// 	GUI_DrawFont24(x,y,fc,bc,str,mode);	
+		// 	else
+		// 	GUI_DrawFont16(x,y,fc,bc,str,mode);
+				
+	    //     str+=2; 
+	    //     x+=size;//下一个汉字偏移	    
+        // }						 
+    } 
+}
+
+
+/**
+ * @brief 显示单个字符
+ * 
+ * @param lcd 屏幕对象
+ * @param x x坐标
+ * @param y y坐标
+ * @param fc 显示的字体颜色
+ * @param bc 显示的背景颜色
+ * @param num 要显示的内容
+ * @param size 要显示的字体大小
+ * @param mode 模式
+ */
+void LCD_ShowChar(LCD_Class_t *lcd, uint16_t x, uint16_t y, LCD_Color_t fc, uint16_t bc, uint8_t num, uint8_t size, uint8_t mode)
+{
+    uint8_t temp;
+    uint8_t pos, t;
+
+    num = num - ' ';                                      // 得到偏移后的值
+    LCD_SetWindows(lcd,x, y, x + size / 2 - 1, y + size - 1); // 设置单个文字显示窗口
+    if (!mode)                                            // 非叠加方式
+    {
+        for (pos = 0; pos < size; pos++)
+        {
+            if (size == 12)
+                temp = ASCII_1206[num][pos]; // 调用1206字体
+            else
+                temp = ASCII_1608[num][pos]; // 调用1608字体
+            for (t = 0; t < size / 2; t++)
+            {
+                if (temp & 0x01)
+                    Lcd_WriteData_16Bit(lcd,fc);
+                else
+                    Lcd_WriteData_16Bit(lcd,bc);
+                temp >>= 1;
+            }
+        }
+    }
+    else // 叠加方式
+    {
+        for (pos = 0; pos < size; pos++)
+        {
+            if (size == 12)
+                temp = ASCII_1206[num][pos]; // 调用1206字体
+            else
+                temp = ASCII_1608[num][pos]; // 调用1608字体
+            for (t = 0; t < size / 2; t++)
+            {
+                if (temp & 0x01)
+                    LCD_Drawpoint(lcd,x + t, y + pos,fc); // 画一个点
+                temp >>= 1;
+            }
+        }
+    }
+    LCD_SetWindows(lcd, 0, 0, lcd->width - 1, lcd->height - 1); // 恢复窗口为全屏
+}
+
 
