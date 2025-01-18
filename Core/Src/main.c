@@ -150,7 +150,7 @@ int main(void)
    LCD_DrawCircle(&LCD,120,200,50,BLUE,3);
   LCD_DrawFillRectangle(&LCD,0,0,120,120,BLACK);
   LCD_DrawRectangle(&LCD,50,20,120,120,BLACK,1);
-  LCD_DrawFilledTriangle(&LCD,50,50,20,100,40,100,PURPLE);。/
+  LCD_DrawFilledTriangle(&LCD,50,50,20,100,40,100,PURPLE);
   /* USER CODE END 2 */
 
   /* Infinite loop */
