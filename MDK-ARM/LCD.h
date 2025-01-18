@@ -22,6 +22,9 @@ extern "C"
 {
 #endif
 	
+#define SWAP(a, b) { int temp = a; a = b; b = temp; }
+
+// RGB(565) 
 typedef enum 
 {
     BLACK     = 0x0000,    // 黑色 RGB(0, 0, 0)  
@@ -81,15 +84,29 @@ typedef struct
  */
 extern void LCD_Init(LCD_Class_t * lcd);
 
+extern void LCD_Reset(LCD_Class_t * lcd);
+
 extern void LCD_Fillclear(LCD_Class_t *lcd, LCD_Color_t color);
 
-extern void LCD_Drawpoint(LCD_Class_t * lcd,uint16_t x,uint16_t y);
+extern void Lcd_Drawpoint(LCD_Class_t *lcd, uint16_t x, uint16_t y,LCD_Color_t color);
 
 extern void LCD_DrawLine(LCD_Class_t *lcd, uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y, LCD_Color_t color,...);
 
 extern void LCD_DrawFille_Circle(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t rad, LCD_Color_t color);
 
 extern void LCD_DrawCircle(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t rad, LCD_Color_t color, ...);
+
+extern void LCD_DrawOval(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t a, uint16_t b, LCD_Color_t color,...);
+
+extern void LCD_DrawFillOval(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t a, uint16_t b, LCD_Color_t color);
+
+extern void LCD_DrawRectangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, LCD_Color_t color, ...);
+
+extern void LCD_DrawFillRectangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, LCD_Color_t color);
+
+extern void LCD_DrawTriangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, LCD_Color_t color, ...);
+
+extern void LCD_DrawFilledTriangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, LCD_Color_t color);
 
 #ifdef __cplusplus
 }

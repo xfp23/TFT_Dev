@@ -71,14 +71,6 @@ void LCD_Fillclear(LCD_Class_t *lcd, LCD_Color_t color)
 }
 
 
-///**
-//* @brief 清除特定区域屏幕
-//* @brief 
-//*/
-//void LCD_clear(LCD_Class_t *lcd, uint16_t x,uint16_t y,LCD_Color_t color)
-//{
-//	
-//}
 /**
 *@brief 设置屏幕显示方向
 */
@@ -135,7 +127,12 @@ void LCD_Reset(LCD_Class_t * lcd)
 	HAL_Delay(50);
 }
 
-
+/**
+ * @brief 向屏幕写入16位的数据
+ * 
+ * @param lcd lcd对象
+ * @param Data 要写入的数据
+ */
 void Lcd_WriteData_16Bit(LCD_Class_t * lcd,uint16_t Data)
 {	
     uint8_t data[2] = { (uint8_t)(Data >> 8) ,(uint8_t)Data};
@@ -144,6 +141,8 @@ void Lcd_WriteData_16Bit(LCD_Class_t * lcd,uint16_t Data)
   HAL_SPI_Transmit_DMA(lcd->display.spi.handle,data,2);
   HAL_GPIO_WritePin(lcd->display.Hardware.CS.Port,lcd->display.Hardware.CS.Pin,GPIO_PIN_SET);
 }
+
+
 /**
 *@brief 在屏幕上显示一个点
 *@param LCD_Class_t 屏幕对象
@@ -155,68 +154,6 @@ void Lcd_Drawpoint(LCD_Class_t *lcd, uint16_t x, uint16_t y,LCD_Color_t color)
 {
 	LCD_SetCursor(lcd, x, y);
 	Lcd_WriteData_16Bit(lcd, (uint16_t)color);	
-}
-
-/**
- * @brief 画板应用程序
- * 
- * @param lcd 
- * @param x 
- * @param y 
- */
-void Applacation_Drawboard(LCD_Class_t *lcd, uint16_t x, uint16_t y)
-{
-    static uint16_t last_x = 0, last_y = 0;  // 用静态变量保存上次的点坐标
-    uint8_t size = 6;  // 点的大小，6个像素组成一个点
-
-    // 如果是第一次调用（初始化点），直接设置last_x和last_y为当前点
-    if (last_x == 0 && last_y == 0) {
-        last_x = x;
-        last_y = y;
-    }
-
-    // 计算前一个点和当前点之间的距离
-    int dx = x - last_x;
-    int dy = y - last_y;
-    int distance = (int)sqrt(dx * dx + dy * dy);  // 计算两个点之间的距离
-
-    // 如果距离较小，直接连接两个点
-    if (distance <= size) {
-        for (int i = -size; i <= size; i++) {
-            for (int j = -size; j <= size; j++) {
-                if ((x + i >= 0) && (y + j >= 0) && (x + i < lcd->width) && (y + j < lcd->height)) {
-                    if (i * i + j * j <= size * size) {
-                        LCD_SetCursor(lcd, x + i, y + j);
-                        Lcd_WriteData_16Bit(lcd, (uint16_t)BLACK);
-                    }
-                }
-            }
-        }
-    }
-    else {
-        // 如果距离较远，则按直线连接前后两个点，填充这条直线
-        float slope = (float)dy / dx;  // 计算斜率
-        for (int i = 0; i < distance; i++) {
-            int new_x = last_x + i * dx / distance;
-            int new_y = last_y + i * dy / distance;
-            
-            // 以粗点的方式绘制每个连接点
-            for (int j = -size; j <= size; j++) {
-                for (int k = -size; k <= size; k++) {
-                    if ((new_x + j >= 0) && (new_y + k >= 0) && (new_x + j < lcd->width) && (new_y + k < lcd->height)) {
-                        if (j * j + k * k <= size * size) {
-                            LCD_SetCursor(lcd, new_x + j, new_y + k);
-                            Lcd_WriteData_16Bit(lcd, (uint16_t)BLACK);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // 更新上一次的点坐标
-    last_x = x;
-    last_y = y;
 }
 
 /**
@@ -372,3 +309,293 @@ void LCD_DrawFille_Circle(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t rad
         }
     }
 }
+
+/**
+ * @brief 屏幕画空心椭圆
+ * 
+ * @param lcd 屏幕对象
+ * @param x 椭圆圆心x坐标
+ * @param y 椭圆圆心y坐标
+ * @param a 半长轴半径
+ * @param b 半短轴半径
+ * @param color 颜色
+ * @param ... 可选参数，线条的粗细程度
+ */
+void LCD_DrawOval(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t a, uint16_t b, LCD_Color_t color, ...)
+{
+    va_list args;
+    va_start(args, color);
+    int line_kness = va_arg(args, int);
+    if (line_kness <= 0) line_kness = 1;
+    va_end(args);
+
+    int x_pos = 0;
+    int y_pos = b;
+    int a2 = a * a;  // a^2
+    int b2 = b * b;  // b^2
+    int err = b2 - a2 * b + a2 / 4;  // 初始误差
+    int e2;
+
+    // 绘制第一个象限
+    while (a2 * y_pos > b2 * x_pos)
+    {
+        // 绘制四个对称点，考虑线条粗细
+        for (int i = -line_kness / 2; i <= line_kness / 2; i++)
+        {
+            for (int j = -line_kness / 2; j <= line_kness / 2; j++)
+            {
+                Lcd_Drawpoint(lcd, x + x_pos + i, y + y_pos + j, color);  // 第一象限
+                Lcd_Drawpoint(lcd, x - x_pos + i, y + y_pos + j, color);  // 第二象限
+                Lcd_Drawpoint(lcd, x + x_pos + i, y - y_pos + j, color);  // 第三象限
+                Lcd_Drawpoint(lcd, x - x_pos + i, y - y_pos + j, color);  // 第四象限
+            }
+        }
+
+        e2 = err;
+        if (e2 <= 0)
+        {
+            x_pos++;
+            err += 2 * b2 * x_pos + b2;  // 增加x
+        }
+        if (e2 > 0)
+        {
+            y_pos--;
+            err -= 2 * a2 * y_pos + a2;  // 减少y
+        }
+    }
+
+    // 绘制第二个象限
+    x_pos = a;
+    y_pos = 0;
+    err = a2 - b2 * a + b2 / 4;
+
+    while (b2 * x_pos > a2 * y_pos)
+    {
+        // 绘制四个对称点，考虑线条粗细
+        for (int i = -line_kness / 2; i <= line_kness / 2; i++)
+        {
+            for (int j = -line_kness / 2; j <= line_kness / 2; j++)
+            {
+                Lcd_Drawpoint(lcd, x + x_pos + i, y + y_pos + j, color);  // 第一象限
+                Lcd_Drawpoint(lcd, x - x_pos + i, y + y_pos + j, color);  // 第二象限
+                Lcd_Drawpoint(lcd, x + x_pos + i, y - y_pos + j, color);  // 第三象限
+                Lcd_Drawpoint(lcd, x - x_pos + i, y - y_pos + j, color);  // 第四象限
+            }
+        }
+
+        e2 = err;
+        if (e2 <= 0)
+        {
+            y_pos++;
+            err += 2 * a2 * y_pos + a2;  // 增加y
+        }
+        if (e2 > 0)
+        {
+            x_pos--;
+            err -= 2 * b2 * x_pos + b2;  // 减少x
+        }
+    }
+}
+
+/**
+ * @brief 屏幕画实心椭圆
+ * 
+ * @param lcd 
+ * @param x 
+ * @param y 
+ * @param a 
+ * @param b 
+ * @param color 
+ */
+void LCD_DrawFillOval(LCD_Class_t *lcd, uint16_t x, uint16_t y, uint16_t a, uint16_t b, LCD_Color_t color)
+{
+    int x_pos = 0;
+    int y_pos = b;
+    int a2 = a * a;  // a^2
+    int b2 = b * b;  // b^2
+    int err = b2 - a2 * b + a2 / 4;  // 初始误差
+    int e2;
+
+    // 填充椭圆的上半部分
+    while (a2 * y_pos > b2 * x_pos)
+    {
+        // 绘制从左到右的线段，填充上半部分
+        for (int i = x - x_pos; i <= x + x_pos; i++)
+        {
+            Lcd_Drawpoint(lcd, i, y + y_pos, color);  // 第一象限的点
+            Lcd_Drawpoint(lcd, i, y - y_pos, color);  // 第四象限的点
+        }
+
+        e2 = err;
+        if (e2 <= 0)
+        {
+            x_pos++;
+            err += 2 * b2 * x_pos + b2;  // 增加x
+        }
+        if (e2 > 0)
+        {
+            y_pos--;
+            err -= 2 * a2 * y_pos + a2;  // 减少y
+        }
+    }
+
+    // 填充椭圆的下半部分
+    x_pos = a;
+    y_pos = 0;
+    err = a2 - b2 * a + b2 / 4;
+
+    while (b2 * x_pos > a2 * y_pos)
+    {
+        // 绘制从左到右的线段，填充下半部分
+        for (int i = x - x_pos; i <= x + x_pos; i++)
+        {
+            Lcd_Drawpoint(lcd, i, y + y_pos, color);  // 第一象限的点
+            Lcd_Drawpoint(lcd, i, y - y_pos, color);  // 第四象限的点
+        }
+
+        e2 = err;
+        if (e2 <= 0)
+        {
+            y_pos++;
+            err += 2 * a2 * y_pos + a2;  // 增加y
+        }
+        if (e2 > 0)
+        {
+            x_pos--;
+            err -= 2 * b2 * x_pos + b2;  // 减少x
+        }
+    }
+}
+
+/**
+ * @brief 屏幕画空心矩形
+ * 
+ * @param lcd 
+ * @param x1 左上角点的横坐标
+ * @param y1 左上角点的纵坐标
+ * @param x2 右下角点的横坐标
+ * @param y2 右下角点的纵坐标
+ * @param color 矩形颜色
+ * @param ... 可选参数，线条的粗细 默认为1
+ */
+void LCD_DrawRectangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, LCD_Color_t color, ...)
+{
+    int line_kness = 1;
+    va_list args;
+    va_start(args, color);
+    line_kness = va_arg(args, int);
+    va_end(args);
+
+    // 确保粗细参数大于0
+    if (line_kness <= 0) line_kness = 1;
+
+    // 绘制矩形的上边和下边
+    for (int i = -line_kness; i <= line_kness; i++) {
+        for (int x = x1; x <= x2; x++) {
+            Lcd_Drawpoint(lcd, x, y1 + i, color);  // 上边
+            Lcd_Drawpoint(lcd, x, y2 + i, color);  // 下边
+        }
+    }
+
+    // 绘制矩形的左边和右边
+    for (int i = -line_kness; i <= line_kness; i++) {
+        for (int y = y1; y <= y2; y++) {
+            Lcd_Drawpoint(lcd, x1 + i, y, color);  // 左边
+            Lcd_Drawpoint(lcd, x2 + i, y, color);  // 右边
+        }
+    }
+
+    // 处理矩形四个角的对齐
+    for (int i = -line_kness; i <= line_kness; i++) {
+        Lcd_Drawpoint(lcd, x1 + i, y1 + i, color);  // 左上角
+        Lcd_Drawpoint(lcd, x2 + i, y1 + i, color);  // 右上角
+        Lcd_Drawpoint(lcd, x1 + i, y2 + i, color);  // 左下角
+        Lcd_Drawpoint(lcd, x2 + i, y2 + i, color);  // 右下角
+    }
+}
+
+
+/**
+ * @brief 在屏幕上显示实心圆
+ * 
+ * @param lcd 
+ * @param x1 左上角点的横坐标
+ * @param y1 左上角点的纵坐标
+ * @param x2 右下角点的横坐标
+ * @param y2 右下角点的纵坐标
+ * @param color 矩形颜色
+ */
+void LCD_DrawFillRectangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, LCD_Color_t color)
+{
+    for (int y = y1; y <= y2; y++) {
+        for (int x = x1; x <= x2; x++) {
+            Lcd_Drawpoint(lcd, x, y, color);  // 填充矩形的每个点
+        }
+    }
+}
+
+/**
+ * @brief 在屏幕画三角形
+ * 
+ * @param lcd 
+ * @param x1 顶点坐x标
+ * @param y1 顶点y坐标
+ * @param x2 底边顶点1x坐标
+ * @param y2 底边顶点1y坐标
+ * @param x3 底边顶点2x坐标
+ * @param y3 底边顶点2x坐标
+ * @param color 三角形颜色
+ * @param ... 可选参数，线条粗细，默认为1
+ */
+void LCD_DrawTriangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, LCD_Color_t color, ...)
+{
+    int line_kness = 1;
+    va_list args;
+    va_start(args, color);
+    line_kness = va_arg(args, int);
+    va_end(args);
+
+    // 确保粗细参数大于0
+    if (line_kness <= 0) line_kness = 1;
+
+    // 绘制三角形的三条边
+    LCD_DrawLine(lcd, x1, y1, x2, y2, color, line_kness);  // 边1
+    LCD_DrawLine(lcd, x2, y2, x3, y3, color, line_kness);  // 边2
+    LCD_DrawLine(lcd, x3, y3, x1, y1, color, line_kness);  // 边3
+}
+
+
+void LCD_DrawFilledTriangle(LCD_Class_t *lcd, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, LCD_Color_t color)
+{
+    // 确保三个点按 y 坐标排序
+    if (y1 > y2) { SWAP(x1, x2); SWAP(y1, y2); }
+    if (y1 > y3) { SWAP(x1, x3); SWAP(y1, y3); }
+    if (y2 > y3) { SWAP(x2, x3); SWAP(y2, y3); }
+
+    // 计算三个边的斜率
+    int dx1 = x2 - x1, dy1 = y2 - y1;
+    int dx2 = x3 - x1, dy2 = y3 - y1;
+    int dx3 = x3 - x2, dy3 = y3 - y2;
+
+    // 画三角形的实心区域
+    for (int y = y1; y <= y3; y++) {
+        int x_start, x_end;
+
+        if (y < y2) {
+            // 第一条边 (x1, y1) 到 (x2, y2)
+            x_start = x1 + dx1 * (y - y1) / dy1;
+            x_end = x1 + dx2 * (y - y1) / dy2;
+        } else {
+            // 第二条边 (x2, y2) 到 (x3, y3)
+            x_start = x2 + dx3 * (y - y2) / dy3;
+            x_end = x1 + dx2 * (y - y1) / dy2;
+        }
+
+        if (x_start > x_end) { SWAP(x_start, x_end); } // 保证从左到右绘制
+
+        for (int x = x_start; x <= x_end; x++) {
+            Lcd_Drawpoint(lcd, x, y, color);
+        }
+    }
+}
+
